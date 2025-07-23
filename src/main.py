@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 from feature_engineering import engineer_features
 from scoring_model import CreditScoringModel
 
@@ -8,9 +9,19 @@ def main():
     """
     Main function to run the credit scoring pipeline.
     """
+    # --- IMPROVEMENT: Create robust file paths ---
+    # This ensures the script can find the files regardless of where you run it from.
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+    DATA_PATH = os.path.join(PROJECT_ROOT, 'data', 'user-wallet-transactions.json')
+    SCORES_PATH = os.path.join(PROJECT_ROOT, 'wallet_scores.csv')
+    MODEL_PATH = os.path.join(PROJECT_ROOT, 'credit_scoring_model.pkl')
+    GRAPH_PATH = os.path.join(PROJECT_ROOT, 'score_distribution.png')
+
+
     # 1. Load Data
     print("Loading transaction data...")
-    with open('../data/user-wallet-transactions.json', 'r') as f:
+    with open(DATA_PATH, 'r') as f:
         data = json.load(f)
     df = pd.json_normalize(data)
 
@@ -25,8 +36,8 @@ def main():
 
     # 4. Save Results
     print("Saving wallet scores...")
-    wallet_scores.to_csv('../wallet_scores.csv')
-    model.save_model('../credit_scoring_model.pkl')
+    wallet_scores.to_csv(SCORES_PATH)
+    model.save_model(MODEL_PATH)
     print(f"Successfully scored {len(wallet_scores)} wallets.")
 
     # 5. Generate Analysis Graph
@@ -38,8 +49,8 @@ def main():
     plt.ylabel('Number of Wallets', fontsize=12)
     plt.xticks(range(0, 1001, 100))
     plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.savefig('../score_distribution.png')
-    print("Analysis graph saved to score_distribution.png")
+    plt.savefig(GRAPH_PATH)
+    print(f"Analysis graph saved to {GRAPH_PATH}")
 
 if __name__ == '__main__':
     main()

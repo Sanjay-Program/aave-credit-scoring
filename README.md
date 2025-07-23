@@ -30,7 +30,7 @@ The `IsolationForest` model outputs an anomaly score. This score is then transfo
 
 1.  **Setup Environment**:
     ```bash
-    git clone <repository_url>
+    git clone https://github.com/Sanjay-Program/aave-credit-scoring
     cd aave-credit-scoring
     pip install -r requirements.txt
     ```

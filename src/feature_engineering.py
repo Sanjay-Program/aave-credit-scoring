@@ -19,8 +19,12 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: A DataFrame with wallets as indices and engineered features as columns.
     """
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
-    df['amount_usd'] = pd.to_numeric(df['actionData'].apply(lambda x: x.get('amount', 0)), errors='coerce') * \
-                       pd.to_numeric(df['actionData'].apply(lambda x: x.get('assetPriceUSD', 0)), errors='coerce')
+
+    # --- FIX: Use the flattened columns directly ---
+    # The original script tried to access a non-existent 'actionData' column.
+    # We now use 'actionData.amount' and 'actionData.assetPriceUSD' which were created by json_normalize.
+    df['amount_usd'] = pd.to_numeric(df['actionData.amount'], errors='coerce') * \
+                       pd.to_numeric(df['actionData.assetPriceUSD'], errors='coerce')
     df = df.dropna(subset=['amount_usd'])
 
     wallets = {}
@@ -40,7 +44,8 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 
         # 2. Behavioral & Risk Indicators
         features['liquidation_count'] = (group['action'] == 'liquidationcall').sum()
-        features['unique_assets_interacted'] = group['actionData'].apply(lambda x: x.get('assetSymbol')).nunique()
+        # --- FIX: Use the flattened 'actionData.assetSymbol' column ---
+        features['unique_assets_interacted'] = group['actionData.assetSymbol'].nunique()
         
         # 3. Temporal Features
         days_active = (group['timestamp'].max() - group['timestamp'].min()).days + 1
